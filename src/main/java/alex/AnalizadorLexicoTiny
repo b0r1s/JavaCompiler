@@ -1,0 +1,154 @@
+package alex;
+
+import errors.GestionErroresTiny;
+
+%%
+%cup
+%line
+%class AnalizadorLexicoTiny
+%unicode
+%public
+
+%{
+  private ALexOperations ops;
+  private GestionErroresTiny errores;
+  public String lexema() {return yytext();}
+  public int fila() {return yyline+1;}
+  public void fijaGestionErrores(GestionErroresTiny errores) {
+   this.errores = errores;
+  }
+  public GestionErroresTiny getErrores() {
+    return this.errores;
+  }
+%}
+
+%eofval{
+  return ops.unidadEof();
+%eofval}
+
+%init{
+  ops = new ALexOperations(this);
+  errores = new GestionErroresTiny();
+%init}
+
+digitoPositivo = [1-9]
+digito = ({digitoPositivo}|0)
+letra  = ([A-Z]|[a-z])
+simboloLetra = [_\$]
+
+separador = [ \t\r\b\n]
+
+identificador = {letra}({letra}|{digito}|{simboloLetra})*
+
+boolean = boolean
+true = true
+false = false
+
+int = int
+valorInt = {digito}+
+
+double = double
+valorDoubleAux = ([eE][\+-]?{valorInt})?
+valorDouble1 = {valorInt}(\.{digito}*)?{valorDoubleAux}
+valorDouble2 = \.{digito}+{valorDoubleAux}
+
+char = char
+comilla = '
+valorChar = {comilla}.{comilla}
+
+void = void
+
+null = null
+new = new
+class = class
+return = return
+if = if
+else = else
+for = for
+this = this
+comentario1 = \/\/.*
+comentario2 = [/][*][^*]*[*]+([^*/][^*]*[*]+)*[/] 
+
+or = \|\|
+and = &&
+igualComp = ==
+distComp = !=
+menor = <
+menorIgual = <=
+mayor = >
+mayorIgual = >=
+aritSuma = \+
+aritResta = -
+aritMultiplicacion = \*
+aritDivision = /
+aritPorcentaje = %
+negado = !
+masMas = \+\+
+menosMenos = --
+igual = =
+interrog = \?
+dosPuntos = :
+
+parentesisApertura = \(
+parentesisCierre = \)
+corcheteApertura = \[
+corcheteCierre = \]
+llaveApertura = \{
+llaveCierre = \}
+coma = ,
+puntoYComa = ;
+punto = \.
+
+%%
+{separador}               {}
+{boolean}                 {return ops.unidadBoolean();}
+{true}                    {return ops.unidadTrue();}
+{false}                   {return ops.unidadFalse();}
+{int}                     {return ops.unidadInt();}
+{valorInt}                {return ops.unidadValorInt();}
+{double}                  {return ops.unidadDouble();}
+{valorDouble1}            {return ops.unidadValorDouble();}
+{valorDouble2}            {return ops.unidadValorDouble();}
+{char}                    {return ops.unidadChar();}
+{valorChar}               {return ops.unidadValorChar();}
+{void}                    {return ops.unidadVoid();}
+{new}                     {return ops.unidadNew();}
+{null}                    {return ops.unidadNull();}
+{class}                   {return ops.unidadClass();}
+{return}                  {return ops.unidadReturn();}
+{if}                      {return ops.unidadIf();}
+{else}                    {return ops.unidadElse();}
+{for}                     {return ops.unidadFor();}
+{comentario1}             {}
+{comentario2}             {}
+{or}                      {return ops.unidadOr();}
+{and}                     {return ops.unidadAnd();}
+{igualComp}               {return ops.unidadIgualComp();}
+{distComp}                {return ops.unidadDistComp();}
+{masMas}                  {return ops.unidadMasMas();}
+{menosMenos}              {return ops.unidadMenosMenos();}
+{aritSuma}                {return ops.unidadMas();}
+{aritResta}               {return ops.unidadMenos();}
+{menorIgual}              {return ops.unidadMenorIgual();}
+{menor}                   {return ops.unidadMenor();}
+{mayorIgual}              {return ops.unidadMayorIgual();}
+{mayor}                   {return ops.unidadMayor();}
+{aritMultiplicacion}      {return ops.unidadMul();}
+{aritDivision}            {return ops.unidadDiv();}
+{aritPorcentaje}          {return ops.unidadMod();}
+{negado}                  {return ops.unidadNegado();}
+{igual}                   {return ops.unidadIgual();} 
+{parentesisApertura}      {return ops.unidadParAp();}
+{parentesisCierre}        {return ops.unidadParCi();} 
+{corcheteApertura}        {return ops.unidadCorchAp();}
+{corcheteCierre}          {return ops.unidadCorchCi();}
+{llaveApertura}           {return ops.unidadLlaveAp();}
+{llaveCierre}             {return ops.unidadLlaveCi();}
+{coma}                    {return ops.unidadComa();}
+{puntoYComa}              {return ops.unidadPuntoYComa();}
+{punto}                   {return ops.unidadPunto();}
+{dosPuntos}               {return ops.unidadDosPuntos();}
+{interrog}                {return ops.unidadInterrog();}
+{this}                    {return ops.unidadThis();}
+{identificador}           {return ops.unidadId();}
+[^]                       {errores.errorLexico(fila(),lexema());}  

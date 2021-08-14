@@ -1,0 +1,381 @@
+package asint;
+
+import java_cup.runtime.*;
+import alex.AnalizadorLexicoTiny;
+import alex.UnidadLexica;
+import alex.TokenValue;
+import errors.GestionErroresTiny;
+import ast.*;
+
+scan with {: return getScanner().next_token(); :};
+action code {:
+   private ASTiny as = new ASTiny();
+:};
+parser code {: 
+   public GestionErroresTiny errores;
+   public void syntax_error(Symbol unidadLexica) {
+     errores.errorSintactico((UnidadLexica)unidadLexica);
+   }
+:};
+init with {: 
+   errores = new GestionErroresTiny();
+   //AnalizadorLexicoTiny alex = (AnalizadorLexicoTiny)getScanner();
+   //alex.fijaGestionErrores(errores);
+:};
+
+
+terminal TokenValue IDENTIF, THIS,
+                BOOLEAN, TRUE, FALSE,
+                INT, VALOR_INT,
+                DOUBLE, VALOR_DOUBLE,
+                CHAR, VALOR_CHAR,
+                VOID, NEW, NULL, CLASS, RETURN,
+                IF, ELSE, FOR,
+                OR, AND, IGUAL_COMP, DIST_COMP,
+                MENOR, MENOR_IGUAL, MAYOR, MAYOR_IGUAL,
+                MAS, MENOS, POR, DIV, MOD,
+                NEGADO, MAS_MAS, MENOS_MENOS,
+                IGUAL,
+                INTERROG, DOS_PUNTOS,
+                PAR_AP, PAR_CI, CORCH_AP, CORCH_CI, LLAVE_AP, LLAVE_CI,
+                COMA, PYC, PUNTO ;
+              
+non terminal  Prog P , RClass;
+non terminal  Clase CClass, RMetodo;
+non terminal  TokenValue ClassCab;
+non terminal  Met Metodo, Metodo_aux;
+non terminal  Tipo Tipo_simple;
+non terminal  TSimpleOArray TTipo;
+non terminal  Corchetes R1Corchetes;
+non terminal  Params PParams, RParam;
+non terminal  Param PParam;
+non terminal  BloqueIns RIns, Else;
+non terminal  Ins IIns, Ins_sin, Ins_sin_opt, If, For, Return, Asig;
+non terminal  IAsig Asig2;
+non terminal  Expr E0, E1, E2, E3, E4, E5, E6, E7, E8, CCorchetes, Nuevo_obj, Variable, Expr_opt;
+non terminal  ExtraValor Extras;
+non terminal  ExtraValorPunto Var_extra_punto;
+non terminal  ArrayInit Array_init, Array_init_opt, Cont_array, RCont_array;
+non terminal  Argumentos Args, RArgumento;
+non terminal  IdCorchTemp IdCorch;
+
+//Los errores que tienen al lado // significa que no he podido hacer que surgiese ese error, normalmente debido a
+//por ejemplo, que una expresion no se reduce hasta que llega el token que la termina segun la gramatica
+//por ello, si ese token no llega no se dispara E0 error, porque considera que es la expresión la que está mal
+//pues no la ha podido reducir. Esto no ocurre si en vez de E0 ponemos por ejemplo un terminal, o cualquier cosa
+//que sepa que puede reducir.
+
+P               ::= RClass:rc
+                    {: RESULT = rc; :};
+RClass          ::= CClass:c RClass:rc
+                    {: rc.add(c); RESULT = rc; :}
+                  |
+                    {: RESULT = as.programa().setFila(1); :};
+CClass           ::= ClassCab:id RMetodo:c LLAVE_CI
+                    {: c.setFila(id.fila); c.setNombre(id.lex); RESULT = c; :};
+ClassCab        ::= CLASS:c IDENTIF:id LLAVE_AP 
+                    {: RESULT = as.token(c.fila,id.lex); :} /*Apaño*/
+                      | CLASS IDENTIF error 
+                      {: System.out.println("(Cod.1) Se esperaba una llave '{'"); :}
+                      | CLASS error
+                      {: System.out.println("(Cod.2) Se esperaba un identificador de la clase"); :}
+                      | error
+                      {: System.out.println("(Cod.3) Se esperaba la palabra reservada class"); :};
+RMetodo         ::= Metodo_aux:m RMetodo:rm
+                    {: rm.add(m); RESULT = rm; :}
+                  | Asig2:a PYC RMetodo:rm
+                    {: rm.add(a); RESULT = rm; :}
+                  | 
+                    {: RESULT = as.clase(); :}
+                      | error PYC
+                      {: System.out.println("(Cod.4) Declaración incorrecta"); :}; //Se va por error de metodo_aux
+Metodo_aux      ::= TTipo:t Metodo:m
+                    {: m.setTtipo(t); m.setFila(t.getFila()); RESULT = m; :}
+                  | Metodo:m
+                    {: RESULT = m; :}
+                      | error
+                      {: System.out.println("(Cod.5) Se esperaba un identificador"); :};
+Metodo          ::= IDENTIF:id PAR_AP:p PParams:params PAR_CI LLAVE_AP:ll RIns:bloque LLAVE_CI
+                    {: Met met = as.metodo(id.lex,params.setFila(p.fila),bloque.setFila(ll.fila)); 
+                       met.setFila(id.fila); RESULT = met; :}
+                      | IDENTIF PAR_AP PParams PAR_CI error
+                      {: System.out.println("(Cod.6) Se esperaba '{'"); :} 
+                      | IDENTIF PAR_AP error
+                      {: System.out.println("(Cod.7) Parámetro incorrecto"); :}
+                      | IDENTIF error
+                      {: System.out.println("(Cod.8) Se esperaba '(', '=' o ';'"); :};
+                    
+TTipo            ::= Tipo_simple:t R1Corchetes:corch
+                    {: RESULT = as.tipoSimpleOArray(t, corch).setFila(t.getFila()); :}
+                  | IdCorch:i
+                    {: RESULT = as.tipoSimpleOArray(i).setFila(i.getFila()); :}
+                  | VOID:v
+                    {: Corchetes c = as.corchetes();
+                       Tipo t = as.tipoVoid().setFila(v.fila);
+                       TSimpleOArray ts = as.tipoSimpleOArray(t, c).setFila(v.fila);
+                       RESULT = ts; :};
+Tipo_simple     ::= BOOLEAN:t
+                    {: RESULT = as.tipoBoolean().setFila(t.fila); :}
+                  | INT:t
+                    {: RESULT = as.tipoInt().setFila(t.fila); :}
+                  | DOUBLE:t
+                    {: RESULT = as.tipoDouble().setFila(t.fila); :}
+                  | CHAR:t
+                    {: RESULT = as.tipoChar().setFila(t.fila); :};
+
+IdCorch         ::= IDENTIF:id R1Corchetes:corch
+                    {: IdCorchTemp i = as.idCorchTemp().setFila(id.fila);
+                       i.setId(id.lex); i.setCorchetes(corch);
+                       RESULT = i; :};
+
+R1Corchetes     ::= CCorchetes:e R1Corchetes:t
+                    {: t.add(e); RESULT = t; :}
+                  |
+                    {: RESULT = as.corchetes(); :};
+CCorchetes      ::= CORCH_AP:c Expr_opt:e CORCH_CI
+                    {: RESULT = e.setFila(c.fila); :};
+Expr_opt        ::= E0:e
+                    {: RESULT = e; :}
+                  | 
+                    {: RESULT = as.nulo(); :}
+                      | error
+                      {: System.out.println("(Cod.9) Se esperaba una expresión o nada entre corchetes"); :};
+PParams         ::= PParam:p RParam:rp
+                    {: rp.add(p); RESULT = rp; :}
+                  |
+                    {: RESULT = as.parametros(); :};
+RParam          ::= COMA PParam:p RParam:rp
+                    {: rp.add(p); RESULT = rp; :}
+                  |
+                    {: RESULT = as.parametros(); :}
+                      | COMA error
+                      {: System.out.println("(Cod.10) Se esperaba un tipo"); :}
+                      | error
+                      {: System.out.println("(Cod.11) Se esperaba un tipo"); :}; //Considera mal el parámeto saliente o entrante
+PParam          ::= TTipo:t IDENTIF:id
+                    {: RESULT = as.parametro(t,id.lex).setFila(t.getFila()); :};
+RIns            ::= IIns:i RIns:ri
+                    {: ri.add(i); RESULT = ri; :}
+                  |
+                    {: RESULT = as.bloque(); :};
+IIns            ::= Ins_sin:i PYC
+                    {: RESULT = i; :}
+                  | If:i
+                    {: RESULT = i; :}
+                  | For:f
+                    {: RESULT = f; :}
+                      | Ins_sin error
+                      {: System.out.println("(Cod.12) Inicio de instrucción no válido"); :}
+                      | error
+                      {: System.out.println("(Cod.13) Declaración incorrecta (método, atributo o expresion)");:};
+Ins_sin         ::= Asig:a
+                    {: RESULT = a; :}
+                  | Return:r
+                    {: RESULT = r; :};
+
+Ins_sin_opt     ::= Ins_sin:i
+                    {: RESULT = i; :}
+                  |
+                    {: RESULT = null; :};
+
+Asig            ::= Asig2:a
+                    {: RESULT = a; :}
+                  | IdCorch:id IGUAL E0:e
+                    {: Declar d = as.declaracion(id).setFila(id.getFila());
+                       RESULT = as.asignacion(d,e).setFila(id.getFila()); :}
+                  | E0:e
+                    {: RESULT = as.expresion(e).setFila(e.getFila()); :};
+Asig2           ::= PParam:p IGUAL E0:e
+                    {: Declar d = as.declaracion(p.getTtipo(),p.getId()).setFila(p.getFila());
+                       RESULT = as.asignacion(d,e).setFila(p.getFila()); :}
+                  | PParam:p
+                  {: Declar d = as.declaracion(p.getTtipo(),p.getId()).setFila(p.getFila());
+                     RESULT = as.asignacion(d,null).setFila(p.getFila()); :}
+                      | PParam IGUAL error
+                      {: System.out.println("(Cod.14) Expresión incorrecta o sin ';'"); :};
+
+E0              ::= E1:e INTERROG E1:f DOS_PUNTOS E1:g
+                    {: RESULT = as.opTernario(e,f,g).setFila(e.getFila()); :}
+                  | E1:e
+                    {: RESULT = e; :};
+E1              ::= E1:e AND E2:f
+                    {: RESULT = as.and(e,f).setFila(e.getFila()); :}
+                  | E1:e OR E2:f
+                    {: RESULT = as.or(e,f).setFila(e.getFila()); :}
+                  | E2:e
+                    {: RESULT = e; :};
+E2              ::= E2:e IGUAL_COMP E3:f
+                    {: RESULT = as.igualComp(e,f).setFila(e.getFila()); :}
+                  | E2:e DIST_COMP E3:f
+                    {: RESULT = as.distComp(e,f).setFila(e.getFila()); :}
+                  | E3:e
+                    {: RESULT = e; :};
+E3              ::= E3:e MENOR E4:f
+                    {: RESULT = as.menor(e,f).setFila(e.getFila()); :}
+                  | E3:e MENOR_IGUAL E4:f
+                    {: RESULT = as.menorIgual(e,f).setFila(e.getFila()); :}
+                  | E3:e MAYOR E4:f
+                    {: RESULT = as.mayor(e,f).setFila(e.getFila()); :}
+                  | E3:e MAYOR_IGUAL E4:f
+                    {: RESULT = as.mayorIgual(e,f).setFila(e.getFila()); :}
+                  | E4:e
+                    {: RESULT = e; :};
+E4              ::= E4:e MAS E5:f
+                    {: RESULT = as.suma(e,f).setFila(e.getFila()); :}
+                  | E4:e MENOS E5:f
+                    {: RESULT = as.resta(e,f).setFila(e.getFila()); :}
+                  | E5:e
+                    {: RESULT = e; :};
+E5              ::= E5:e POR E6:f
+                    {: RESULT = as.mul(e,f).setFila(e.getFila()); :}
+                  | E5:e DIV E6:f
+                    {: RESULT = as.div(e,f).setFila(e.getFila()); :}
+                  | E5:e MOD E6:f
+                    {: RESULT = as.mod(e,f).setFila(e.getFila()); :}
+                  | E6:e
+                    {: RESULT = e; :};
+E6              ::= NEGADO:n E6:e
+                    {: RESULT = as.negado(e).setFila(n.fila); :}
+                  | MAS_MAS:m E7:e
+                    {: RESULT = as.masMasIzq(e).setFila(m.fila); :}
+                  | MENOS_MENOS:m E7:e
+                    {: RESULT = as.menosMenosIzq(e).setFila(m.fila); :}
+                  | MAS:m E7:e
+                    {: RESULT = as.masIzq(e).setFila(m.fila); :}
+                  | MENOS:m E7:e
+                    {: RESULT = as.menosIzq(e).setFila(m.fila); :}
+                  | E7:e
+                    {: RESULT = e; :};
+E7              ::= E8:e MAS_MAS
+                    {: RESULT = as.masMasDer(e).setFila(e.getFila()); :}
+                  | E8:e MENOS_MENOS
+                    {: RESULT = as.menosMenosDer(e).setFila(e.getFila()); :}
+                  | E7:e Extras:extra
+                    {: e.setExtra(extra); RESULT = e; :}
+                  | E8:e
+                    {: RESULT = e; :};
+E8              ::= TRUE:val
+                    {: RESULT = as.bool(val.lex).setFila(val.fila); :}
+                  | FALSE:val
+                    {: RESULT = as.bool(val.lex).setFila(val.fila); :}
+                  | VALOR_INT:val
+                    {: RESULT = as.ent(val.lex).setFila(val.fila); :}
+                  | VALOR_DOUBLE:val
+                    {: RESULT = as.doub(val.lex).setFila(val.fila); :}
+                  | VALOR_CHAR:val
+                    {: RESULT = as.charac(val.lex).setFila(val.fila); :}
+                  | PAR_AP:pa E0:e PAR_CI:pc R1Corchetes:corch
+                    {: VValorExtraArray extraC = as.extraArray(corch).setFila(pc.fila); 
+                       e.setExtra(extraC); RESULT = e.setFila(pa.fila); :}
+                  | NULL:n
+                    {: RESULT = as.nulo().setFila(n.fila); :}
+                  | THIS:t
+                    {: RESULT = as.vthis().setFila(t.fila); :}
+                  | NEW:n Nuevo_obj:o
+                    {: RESULT = o.setFila(n.fila); :}
+                  | Variable:var
+                    {: RESULT = var; :};  
+
+Nuevo_obj       ::= TTipo:t PAR_AP:p Args:args PAR_CI
+                    {: RESULT = as.nuevoObjClase(t,args.setFila(p.fila)).setFila(t.getFila()); :}
+                  | TTipo:t Array_init_opt:init
+                    {: RESULT = as.nuevoObjArray(t,init).setFila(t.getFila()); :}
+                      | TTipo PAR_AP error
+                      {: System.out.println("(Cod.15) Error en los argumentos"); :}
+                      | error
+                      {: System.out.println("(Cod.16) Se esperaba un tipo"); :};
+Variable        ::= IdCorch:var
+                    {: VValor val = as.valor().setFila(var.getFila());
+                       val.setId(var); RESULT = val; :}
+                    | IDENTIF:id PAR_AP:p Args:args PAR_CI R1Corchetes:corch
+                    {: VValorExtraArray extraC = as.extraArray(corch); 
+                       VValorMet extraMet = as.valorMet(args.setFila(p.fila)).setFila(id.fila);
+                       extraMet.setExtra(extraC);
+                       extraMet.setId(id.lex); RESULT = extraMet; :}
+                      | IDENTIF PAR_AP error
+                      {: System.out.println("(Cod.17) Argumentos incorrectos o se esperaba ')'"); :};
+
+Extras          ::= PUNTO:p IDENTIF:id Var_extra_punto:extraP R1Corchetes:corch
+                    {: VValorExtraArray extraC = as.extraArray(corch).setFila(id.fila); /*Chapucilla*/
+                       extraP.setId(as.valor(id.lex));
+                       extraP.setExtra(extraC); RESULT = extraP.setFila(p.fila); :}
+                      | PUNTO error
+                      {: System.out.println("(Cod.18) Se esperaba '('"); :};
+Var_extra_punto ::= PAR_AP:p Args:args PAR_CI
+                    {: RESULT = as.extraMetodo(args.setFila(p.fila)); :}
+                  |
+                    {: RESULT = as.extraAtrib(); :}
+                      | PAR_AP error
+                      {: System.out.println("(Cod.19) Se esperaba ')'"); :};
+
+RCont_array     ::= COMA Cont_array:cont
+                    {: RESULT = cont; :}
+                  |
+                    {: RESULT = as.arrayInit(); :}
+                      | COMA error
+                      {: System.out.println("(Cod.20) Se esperaba una llave '{'"); :};
+Cont_array      ::= Array_init:a RCont_array:cont
+                    {: cont.add(a); RESULT = cont; :};
+Array_init_opt  ::= Array_init:a
+                    {: RESULT = a; :}
+                  |
+                    {: RESULT = null; :};
+Array_init      ::= LLAVE_AP:ll Cont_array:a LLAVE_CI
+                    {: RESULT = a.setFila(ll.fila); :}
+                  | LLAVE_AP:ll Args:args LLAVE_CI
+                    {: RESULT = as.arrayInit(args.setFila(ll.fila)).setFila(ll.fila); :}
+                      | LLAVE_AP Cont_array error
+                      {: System.out.println("(Cod.21) Se esperaba ';'"); :}
+                      | LLAVE_AP error
+                      {: System.out.println("(Cod.22) Se esperaba una expresión, ',' o '}'"); :};
+
+Args            ::= E0:e RArgumento:args
+                    {: args.add(e); RESULT = args; :}
+                  |
+                    {: RESULT = as.argumentos(); :};
+RArgumento      ::= COMA E0:e RArgumento:args
+                    {: args.add(e); RESULT = args; :}
+                  |
+                    {: RESULT = as.argumentos(); :}
+                      | COMA E0 error
+                      {: System.out.println("(Cod.23) Se esperaba una coma, ')' o '}'"); :}; //Expr y error
+
+If              ::= IF:i PAR_AP E0:e PAR_CI LLAVE_AP:ll RIns:bloqIf LLAVE_CI Else:bloqElse
+                    {: RESULT = as.iif(e,bloqIf.setFila(ll.fila),bloqElse).setFila(i.fila); :}
+                      | IF PAR_AP E0 PAR_CI error
+                      {: System.out.println("(Cod.24) Se esperaba una llave '{'"); :}
+                      | IF PAR_AP E0 error
+                      {: System.out.println("(Cod.25) Se esperaba un paréntesis ')'"); :} //Expr y error
+                      | IF PAR_AP error
+                      {: System.out.println("(Cod.26) Expresión para condición inválida"); :} 
+                      | IF error
+                      {: System.out.println("(Cod.27) Se esperaba un paréntesis '('"); :}; 
+Else            ::= ELSE LLAVE_AP:ll RIns:b LLAVE_CI
+                    {: RESULT = b.setFila(ll.fila); :}
+                  |
+                    {: RESULT = null; :}
+                      | ELSE error
+                      {: System.out.println("(Cod.28) Se esperaba una llave '{'"); :};
+
+For             ::= FOR:f PAR_AP Ins_sin_opt:in PYC E0:c PYC Ins_sin_opt:it PAR_CI LLAVE_AP:ll RIns:b LLAVE_CI
+                    {: RESULT = as.ffor(in,c,it,b.setFila(ll.fila)).setFila(f.fila); :}
+                      | FOR PAR_AP Ins_sin_opt PYC E0 PYC Ins_sin_opt PAR_CI error
+                      {: System.out.println("(Cod.29) Se esperaba una llave '{'"); :}
+                      | FOR PAR_AP Ins_sin_opt PYC E0 PYC Ins_sin_opt error
+                      {: System.out.println("(Cod.30) Se esperaba un paréntesis ')'"); :} // Ins y error
+                      | FOR PAR_AP Ins_sin_opt PYC E0 error
+                      {: System.out.println("(Cod.32) Se esperaba un ';'"); :} 
+                      | FOR PAR_AP Ins_sin_opt PYC error
+                      {: System.out.println("(Cod.33) Expresión para condición inválida"); :} 
+                      | FOR PAR_AP Ins_sin_opt error
+                      {: System.out.println("(Cod.34) Se esperaba un ';'"); :} 
+                      | FOR error
+                      {: System.out.println("(Cod.36) Se esperaba un '('"); :}; 
+
+Return          ::= RETURN:r E0:e
+                    {: RESULT = as.returnNoVoid(e).setFila(r.fila); :}
+                  | RETURN:r
+                    {: RESULT = as.returnVoid().setFila(r.fila); :};
+
+
+

@@ -1,0 +1,159 @@
+\__Prog
+|      \__Clase:
+|      |        \__Nombre: Buscador
+|      |        \__Metodo:
+|      |        |         \__Nombre: Buscador
+|      |        |         \__Params:
+|      |        |         \__Bloque:
+|      |        \__Metodo:
+|      |        |         \__Nombre: buscarLetra
+|      |        |         \__TipoBoolean
+|      |        |         \__Params:
+|      |        |         |         \__Param:
+|      |        |         |         |        \__TipoChar
+|      |        |         |         |        \__Var: e
+|      |        |         |         \__Param:
+|      |        |         |         |        \__TipoChar
+|      |        |         |         |        \__Var: letra
+|      |        |         |         \__Param:
+|      |        |         |         |        \__TipoInt
+|      |        |         |         |        \__Var: tam
+|      |        |         \__Bloque:
+|      |        |         |         \__Asig:
+|      |        |         |         |       \__Declar:
+|      |        |         |         |       |         \__TipoInt
+|      |        |         |         |       |         \__Var: num
+|      |        |         |         |       \__Expr: -
+|      |        |         |         |       |         \__Expr: +
+|      |        |         |         |       |         |         \__Expr: *
+|      |        |         |         |       |         |         |         \__LitInt: 5
+|      |        |         |         |       |         |         |         \__LitInt: 3
+|      |        |         |         |       |         |         \__LitInt: 2
+|      |        |         |         |       |         \__Expr: %
+|      |        |         |         |       |         |         \__LitInt: 4
+|      |        |         |         |       |         |         \__LitInt: 2
+|      |        |         |         \__Asig:
+|      |        |         |         |       \__Declar:
+|      |        |         |         |       |         \__TipoInt
+|      |        |         |         |       |         \__Var: array
+|      |        |         |         |       \__ValorNull
+|      |        |         |         \__Asig:
+|      |        |         |         |       \__Declar:
+|      |        |         |         |       |         \__TipoDouble
+|      |        |         |         |       |         \__Var: d_1
+|      |        |         |         |       \__LitDouble: +5.
+|      |        |         |         \__Asig:
+|      |        |         |         |       \__Declar:
+|      |        |         |         |       |         \__TipoDouble
+|      |        |         |         |       |         \__Var: d_2
+|      |        |         |         |       \__LitDouble: -.6
+|      |        |         |         \__Asig:
+|      |        |         |         |       \__Declar:
+|      |        |         |         |       |         \__TipoDouble
+|      |        |         |         |       |         \__Var: d_3
+|      |        |         |         |       \__LitDouble: 5e-1
+|      |        |         |         \__Asig:
+|      |        |         |         |       \__Declar:
+|      |        |         |         |       |         \__TipoDouble
+|      |        |         |         |       |         \__Var: d_4
+|      |        |         |         |       \__LitDouble: 5.e2
+|      |        |         |         \__Asig:
+|      |        |         |         |       \__Declar:
+|      |        |         |         |       |         \__TipoDouble
+|      |        |         |         |       |         \__Var: d_5
+|      |        |         |         |       \__LitDouble: .6E5
+|      |        |         |         \__Asig:
+|      |        |         |         |       \__Declar:
+|      |        |         |         |       |         \__TipoBoolean
+|      |        |         |         |       |         \__Var: encontrado
+|      |        |         |         |       \__Expr: !
+|      |        |         |         |       |         \__LitBoolean: true
+|      |        |         |         \__For:
+|      |        |         |         |      \__Asig:
+|      |        |         |         |      |       \__Declar:
+|      |        |         |         |      |       |         \__TipoInt
+|      |        |         |         |      |       |         \__Var: i
+|      |        |         |         |      |       \__LitInt: 0
+|      |        |         |         |      \__Expr: &&
+|      |        |         |         |      |          \__Expr: <
+|      |        |         |         |      |          |         \__Var: i
+|      |        |         |         |      |          |         \__Var: size
+|      |        |         |         |      |          \__Expr: ==
+|      |        |         |         |      |          |          \__Var: encontrado
+|      |        |         |         |      |          |          \__LitBoolean: false
+|      |        |         |         |      \__Asig:
+|      |        |         |         |      |       \__Expr: ++
+|      |        |         |         |      |       |          \__Var: i
+|      |        |         |         |      \__Bloque:
+|      |        |         |         |      |         \__If:
+|      |        |         |         |      |         |     \__Expr: ==
+|      |        |         |         |      |         |     |          \__Var: array
+|      |        |         |         |      |         |     |          \__Var: letra
+|      |        |         |         |      |         |     \__Bloque:
+|      |        |         |         |      |         |     |         \__Asig:
+|      |        |         |         |      |         |     |         |       \__Declar:
+|      |        |         |         |      |         |     |         |       |         \__Var: encontrado
+|      |        |         |         |      |         |     |         |       \__LitBoolean: true
+|      |        |         |         |      |         |     \__Bloque:
+|      |        |         |         \__Return:
+|      |        |         |         |         \__Var: encontrado
+|      |        \__Metodo:
+|      |        |         \__Nombre: noHaceNada
+|      |        |         \__TipoVoid
+|      |        |         \__Params:
+|      |        |         \__Bloque:
+|      |        |         |         \__Return Void
+|      \__Clase:
+|      |        \__Nombre: Main
+|      |        \__Metodo:
+|      |        |         \__Nombre: main
+|      |        |         \__TipoVoid
+|      |        |         \__Params:
+|      |        |         \__Bloque:
+|      |        |         |         \__Asig:
+|      |        |         |         |       \__Declar:
+|      |        |         |         |       |         \__TipoChar
+|      |        |         |         |       |         \__Var: array
+|      |        |         |         |       \__NuevoObj:
+|      |        |         |         |       |           \__TipoInt
+|      |        |         |         \__Asig:
+|      |        |         |         |       \__Declar:
+|      |        |         |         |       |         \__TipoInt
+|      |        |         |         |       |         \__Var: tam
+|      |        |         |         |       \__LitInt: 6
+|      |        |         |         \__Asig:
+|      |        |         |         |       \__Declar:
+|      |        |         |         |       |         \__TipoChar
+|      |        |         |         |       |         \__Var: c
+|      |        |         |         |       \__LitChar: 'e'
+|      |        |         |         \__Asig:
+|      |        |         |         |       \__Declar:
+|      |        |         |         |       |         \__TipoClase: Buscador
+|      |        |         |         |       |         \__Var: buscador
+|      |        |         |         |       \__NuevoObj:
+|      |        |         |         |       |           \__TipoClase: Buscador
+|      |        |         |         \__Asig:
+|      |        |         |         |       \__Declar:
+|      |        |         |         |       |         \__TipoBoolean
+|      |        |         |         |       |         \__Var: esta
+|      |        |         |         |       \__Var: buscador
+|      |        \__Metodo:
+|      |        |         \__Nombre: getArray
+|      |        |         \__TipoChar
+|      |        |         \__Params:
+|      |        |         \__Bloque:
+|      |        |         |         \__Asig:
+|      |        |         |         |       \__Declar:
+|      |        |         |         |       |         \__TipoChar
+|      |        |         |         |       |         \__Var: array
+|      |        |         |         |       \__NuevoArray:
+|      |        |         |         |       |             \__TipoChar
+|      |        |         |         |       |             \__Argumentos:
+|      |        |         |         |       |             |             \__LitChar: 'P'
+|      |        |         |         |       |             |             \__LitChar: 'r'
+|      |        |         |         |       |             |             \__LitChar: 'u'
+|      |        |         |         |       |             |             \__LitChar: 'e'
+|      |        |         |         |       |             |             \__LitChar: 'b'
+|      |        |         |         |       |             |             \__LitChar: 'a'
+|      |        |         |         \__Return:
+|      |        |         |         |         \__Var: array

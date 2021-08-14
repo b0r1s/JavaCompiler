@@ -1,0 +1,54 @@
+class Main {
+
+    int m = 97;
+    
+    //Deberá existir este método
+    void main() {
+
+        //Tipos: boolean, int y char y double convertido en int
+        //El análisis de tipos aún está ahí
+        boolean p0 = false;
+        char p1 = 'z'; //122
+        int p2 = p1;
+        
+        //Operaciones con expresiones
+        int p3 = 7;
+        int p4 = 4; 
+        int p5 = p3++;
+        int p6 = ++p3;
+        int p7 = p4--;
+        int p8 = --p4;
+        boolean p9 = true && (3+1<5) && !(5*3==14);
+        int p10 = p9 ? 123 : 321;
+        int p11 = (5!=6 && 9<=+(-3)) ? 123 : 321;
+
+        //Acceso y modificación de atributos
+        int p12 = -m;
+        m = 977;
+
+        //If
+        int p13;
+        if(true) { p13 = 77; }
+        if(false) { p13 = 44; }
+        int p14;
+        int p15;
+        if(true) {p14 = 555;} else {p14 = 333;}
+        if(false) {p15 = 555;} else {p15 = 333;}
+
+        //For
+        int p16 = 1;
+        for(int i=1; i<=5; i++) {
+            p16 = p16 * i; 
+        }
+
+        //Nótese la coherencia de la pila aún con una expresión
+        //como instrucción en i++
+        5;
+
+        //Return
+        //Aparecerá un null pues p17 nunca se inicializa
+        return;
+        int p17 = 8787;
+        
+    }
+}

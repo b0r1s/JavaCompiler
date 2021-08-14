@@ -1,0 +1,58 @@
+class Main {
+
+    int m = 5;
+    
+    //Deberá existir este método
+    void main() {
+
+        //Llamadas a métodos (incluso uno dentro de otro)
+        int p1 = x(5); //var local l.12
+        int p2 = x(x(17)); //var local l.13
+        x(36); //no se guarda y la pila queda coherente
+        int p3 = 5; //var local l.14
+
+        //Accesos con .
+        //Debe hacerse punto directamente, sin paréntesis
+        //en el medio: (this).m NO (el análisis sintáctico
+        //admite esto porque Java lo admite)
+        int p4 = this.m;
+        int p5 = this.x(33);
+
+        //Creación de clases: solo se puede crear con el
+        //formato siguiente, new debe ser lo único después de =
+        A a = new A();
+        //Acceso a objetos con .
+        int p6 = a.x;
+        int p7 = a.y();
+
+        //Acceso a arrays
+        int[][][] p8 = new int[3][4][2];
+        p8[0][0][0] = 1;
+        for(int i=0; i<3; i++) {
+            for(int j=0; j<4; j++) {
+                for(int k=0; k<2; k++) {
+                    p8[i][j][k] = p8[0][0][0] + (4*i+j)*2+k;
+                }
+            }
+        }
+    }
+
+    int x(int a) {
+        return a+3;
+    }
+    
+}
+
+class A {
+
+    int x;
+
+    A() {
+        x = 6;
+    }
+
+    int y() {
+        return 88;
+    }
+
+}

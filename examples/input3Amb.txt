@@ -1,0 +1,44 @@
+class Hola {
+	
+    Buscador() {} //Constructora que no es de esta clase
+
+    Hola() {} //Metodo con id de la clase
+
+    Main jeje; //Clase definida
+
+    void buscador(boolean cond) { //Declaracion de cond en parametro
+        int x;
+        if (3<5) {
+            x = 5; //Variable no invisible en otro bloque
+        }
+        else {
+            x = 9;
+        }
+
+        a = 5; //Error: uso sin declarar
+        int a;
+        if(true) {
+            int b = 3; //Declaracion en otro bloque
+            int x = 8; //Redeclaracion en otro bloque, invisibilizando la x de antes
+        }
+        b=5; //Error: ya no está declarada
+
+        buscador(); //Id buscador debe existir
+
+        int y;
+        for(int i=0; !cond; i++) {
+            int y = 7; //Declaracion en bucle
+            y++;
+            Adios hola = new Adios(); //Error (x2): Id Adios no existente
+            Hola adios = new Hola(); //Id Hola debe existir
+            y = false ? 5 : 7 ;
+        }
+	for(int i=0; true; i++) {} //Ámbito de la i en el bucle
+        return ;
+    }
+
+}
+
+class Main {
+	Main jeje; //Mismo nombre en distinta clase
+}

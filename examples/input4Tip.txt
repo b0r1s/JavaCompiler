@@ -1,0 +1,78 @@
+/* Hay 19 errores anotados */
+
+class Hola {
+
+    Hola() {} // Constructora
+
+    Main m1 = new Main(); //Error: Se pide metodo inexistente
+
+    Main[] m2 = new Main[5]; //Nuevo array
+
+    Hola[] a1;
+
+    void buscador(boolean cond) {
+
+        //Operaciones
+        cond = 5 < null; //Error: op. aritmetica invalida
+        cond = !(5.5 - 'c' >= 3);
+        
+
+        //Condiciones de instrucciones
+        for(int i=0; 3; i++) {} //Error: la condicion del if y del for deben ser boolean
+        for(int i=0; 3 < 5; i++) {}
+        int w;
+        if(3) {w = 5;} //Error: mismo error
+        if(!cond) {w = 5;}
+        int z = (5<3 && cond) != !false ? 5 : w+1; // El op. ternario tb debe cumplir esa propiedad
+
+    
+        //Compatibilidad asignaciones
+        double x = 5.5;
+        if (3<5) {
+            x = 5;  //Guarda int en double
+        }
+        else {
+            x = 'c'; //Guarda char en double
+        }
+        Hola a2 = new Main(); //Error: Equivalencia de tipos por nombre
+        Hola[] a3 = new Hola[][]{{}}; //Error: arrays de tamaños distintos
+        char y = m2[3].hola(); //Error: queremos meter un int en un char
+
+        //Accesos a arrays, metodos y atributos
+        m2[]; //Error: Tiene que tener int en los corchetes
+        m1.hola(5); //Error: el nº de parametros no coincide
+        buscador(5); //Error: no coinciden los tipos de los argumentos
+        this.buscador(true); //El this funciona, y es opcional 
+        x[3]; //Error: los literales, variables de tipos básicos y null no tienen acceso con [] ni .
+        null.hola(); //Error: como el anterior
+
+        //Encadenamiento de accesos
+        Hola a0 = a1[0];
+        a0.a1[5].a1[2].buscador(true);
+        int a6 = ((new int[5]))[0]; //Acceso al tipo incluso a través de paréntesis
+
+        //Inicializaciones arrays
+        int[][] a7 = new int[][]{{},{{5}}}; //Error: inicializador con dist profundidad
+        int[][] a8 = new int[][]{}; //Error: inicializador con poca profundidad
+        int[][] a9 = new int[][5]; //Error: creacion de array incorrecta
+        int[] a10 = new int[5]{}; //Error: si hay inicializador, los corchetes no tienen nada
+
+        return 5; //Error: es de tipo void
+    }
+
+    Buscador() {} //Error: no es un constructor
+
+}
+
+class Main { 
+
+    //Error: no tiene constructor
+
+    Hola[][] a1 = new Hola[][]{{}};
+
+    Hola a2 = new Hola(); //Nueva clase externa
+
+    int hola() {
+        return ; //Error: falta el valor del return
+    }
+}
